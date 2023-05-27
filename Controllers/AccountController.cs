@@ -56,11 +56,17 @@ namespace MeuRastroCarbonoAPI.Controllers
         [Route("register")]
         public async Task<ActionResult<AccountPayload>> Register(AccountPayload payload)
         {
-            var userEntity = new UserEntity(){
+            var userEntity = new UserEntity()
+            {
+                Name = payload.Name,
                 Email = payload.Email,
-                Name= payload.Name,
                 Password = payload.Password,
-                Birthdate= payload.Birthdate
+                Birthdate = payload.Birthdate,
+                Evolution = new EvolutionEntity()
+                {
+                    Id = new Guid(),
+                    TotalPontuation = 0,
+                }
             };
 
             _context.Users.Add(userEntity);
