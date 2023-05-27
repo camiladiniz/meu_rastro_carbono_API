@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/Properties/ServiceDependencies/meu-rastro-carbono - Web Deploy/profile.arm.json
+/appsettings.json

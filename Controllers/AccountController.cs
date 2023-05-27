@@ -1,7 +1,9 @@
 using MeuRastroCarbonoAPI.Infra;
+using MeuRastroCarbonoAPI.Models.Entities;
 using MeuRastroCarbonoAPI.Models.Payload;
 using MeuRastroCarbonoAPI.Models.Response;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -23,27 +25,48 @@ namespace MeuRastroCarbonoAPI.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginPayload user)
+        public async Task<IActionResult> Login([FromBody] LoginPayload user)
         {
             if (user is null)
             {
                 return BadRequest("Invalid user request!!!");
             }
-            if (user.Email == "Jaydeep" && user.Password == "Pass@777")
+
+            var userEntity = await _context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
+
+            if(userEntity is null || userEntity.Password != user.Password)
             {
-                var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-                var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-                var tokeOptions = new JwtSecurityToken(
-                    issuer: _configuration["JWT:ValidIssuer"],
-                    audience: _configuration["JWT:ValidAudience"],
-                    claims: new List<Claim>(),
-                    expires: DateTime.Now.AddMinutes(6),
-                    signingCredentials: signinCredentials
-                );
-                var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
-                return Ok(new LoginResponse { Token = tokenString });
+                return Unauthorized();
             }
-            return Unauthorized();
+
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var tokeOptions = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                claims: new List<Claim>(),
+                expires: DateTime.Now.AddMinutes(6),
+                signingCredentials: signinCredentials
+            );
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+            return Ok(new LoginResponse { Token = tokenString, Name = userEntity.Name, UserId = userEntity.Id });
+        }
+
+        [HttpPost]
+        [Route("register")]
+        public async Task<ActionResult<AccountPayload>> Register(AccountPayload payload)
+        {
+            var userEntity = new UserEntity(){
+                Email = payload.Email,
+                Name= payload.Name,
+                Password = payload.Password,
+                Birthdate= payload.Birthdate
+            };
+
+            _context.Users.Add(userEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok();
         }
 
         //[HttpGet]

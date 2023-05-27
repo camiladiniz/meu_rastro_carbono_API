@@ -13,8 +13,9 @@ namespace MeuRastroCarbonoAPI.Infra
         }
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
+            options.UseSqlServer(Configuration["DefaultConnection"]);
         }
         public DbSet<UserEntity> Users { get; set; }
+        public DbSet<SurveyEntity> Surveys { get; set; }
     }
 }
