@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeuRastroCarbonoAPI", "MeuRastroCarbonoAPI.csproj", "{DD07E055-F18E-491E-A351-A22C9E7064D0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD07E055-F18E-491E-A351-A22C9E7064D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD07E055-F18E-491E-A351-A22C9E7064D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD07E055-F18E-491E-A351-A22C9E7064D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD07E055-F18E-491E-A351-A22C9E7064D0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {593C9065-7DE8-4A8B-8347-883E7696E45F}
+	EndGlobalSection
+EndGlobal
