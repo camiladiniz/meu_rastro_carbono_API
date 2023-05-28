@@ -5,6 +5,7 @@
         Water,
         Food,
         Electronics,
-        Locomotion
+        Locomotion,
+        Generic
     }
 }
