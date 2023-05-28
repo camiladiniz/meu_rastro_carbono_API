@@ -1,4 +1,5 @@
 using MeuRastroCarbonoAPI.Infra;
+using MeuRastroCarbonoAPI.Infra.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -47,6 +48,7 @@ IConfiguration configuration = new ConfigurationBuilder()
             .Build();
 
 builder.Services.AddDbContext<DbContextClass>();
+builder.Services.AddScoped<EvolutionRepository>();
 builder.Services.AddAuthentication(opt => {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -77,6 +79,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
 app.UseCors(x => x
         .AllowAnyOrigin()
         .AllowAnyMethod()

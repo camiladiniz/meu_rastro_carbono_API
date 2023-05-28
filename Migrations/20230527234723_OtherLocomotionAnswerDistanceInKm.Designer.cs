@@ -4,6 +4,7 @@ using MeuRastroCarbonoAPI.Infra;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeuRastroCarbonoAPI.Migrations
 {
     [DbContext(typeof(DbContextClass))]
-    partial class DbContextClassModelSnapshot : ModelSnapshot
+    [Migration("20230527234723_OtherLocomotionAnswerDistanceInKm")]
+    partial class OtherLocomotionAnswerDistanceInKm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -98,9 +100,6 @@ namespace MeuRastroCarbonoAPI.Migrations
                     b.Property<string>("ComputerCPUModel")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("ComputerCarbonEmissionInKgCO2e")
-                        .HasColumnType("float");
-
                     b.Property<string>("ComputerCoreType")
                         .HasColumnType("nvarchar(max)");
 
@@ -116,24 +115,14 @@ namespace MeuRastroCarbonoAPI.Migrations
                     b.Property<DateTime>("ConsumptionDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("LampCarbonEmissionInKgCO2e")
+                    b.Property<double>("LampType")
                         .HasColumnType("float");
-
-                    b.Property<string>("LampType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("LampsOperationTime")
                         .HasColumnType("float");
 
-                    b.Property<double>("PhoneCarbonEmissionInKgCO2e")
-                        .HasColumnType("float");
-
                     b.Property<DateTime>("RegisterDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<double>("StreamingCarbonEmissionInKgCO2e")
-                        .HasColumnType("float");
 
                     b.Property<double>("StreamingUsageInMinutes")
                         .HasColumnType("float");

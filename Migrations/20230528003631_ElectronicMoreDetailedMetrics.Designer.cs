@@ -4,6 +4,7 @@ using MeuRastroCarbonoAPI.Infra;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MeuRastroCarbonoAPI.Migrations
 {
     [DbContext(typeof(DbContextClass))]
-    partial class DbContextClassModelSnapshot : ModelSnapshot
+    [Migration("20230528003631_ElectronicMoreDetailedMetrics")]
+    partial class ElectronicMoreDetailedMetrics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,9 +121,8 @@ namespace MeuRastroCarbonoAPI.Migrations
                     b.Property<double>("LampCarbonEmissionInKgCO2e")
                         .HasColumnType("float");
 
-                    b.Property<string>("LampType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("LampType")
+                        .HasColumnType("float");
 
                     b.Property<double>("LampsOperationTime")
                         .HasColumnType("float");
