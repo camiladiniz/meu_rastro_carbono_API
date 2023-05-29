@@ -96,6 +96,13 @@ namespace MeuRastroCarbonoAPI.Controllers
             var transportEmissions = await _context.LocomotionSurveyAnswers.Where(w => w.UserId == userId).ToListAsync();
             var devicesEmissions = await _context.ElectronicSurveyAnswers.Where(w => w.UserId == userId).ToListAsync();
 
+            var answeredForm = waterEmissions.Count() > 0 || foodEmissions.Count() > 0 || transportEmissions.Count() > 0 || devicesEmissions.Count() > 0;
+
+            if(!answeredForm)
+            {
+                return Ok(tips);
+            }
+
             // customized tips electronics
             var usesIncandendescentLamp = devicesEmissions.Where(e => e.LampType != "LED").Any();
             if(usesIncandendescentLamp)

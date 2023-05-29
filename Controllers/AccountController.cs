@@ -75,9 +75,23 @@ namespace MeuRastroCarbonoAPI.Controllers
             };
 
             _context.Users.Add(userEntity);
-            await _context.SaveChangesAsync();
 
-            return Ok();
+
+            await _context.SaveChangesAsync();
+            userEntity = await _context.Users.Where(u => u.Email == payload.Email).FirstOrDefaultAsync();
+
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var tokeOptions = new JwtSecurityToken(
+                issuer: _configuration["JWT:ValidIssuer"],
+                audience: _configuration["JWT:ValidAudience"],
+                claims: new List<Claim>(),
+                expires: DateTime.Now.AddMinutes(6),
+                signingCredentials: signinCredentials
+            );
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+
+            return Ok(new LoginResponse { Token = tokenString, Name = userEntity.Name, UserId = userEntity.Id });
         }
 
         //[HttpGet]
