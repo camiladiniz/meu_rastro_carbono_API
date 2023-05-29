@@ -120,10 +120,17 @@ namespace MeuRastroCarbonoAPI.Controllers
             int numberOfItemsToSelect = 2;
             Random random = new Random();
 
-            tips.AddRange(waterTips.Take(numberOfItemsToSelect));
-            tips.AddRange(foodTips.Take(numberOfItemsToSelect));
-            tips.AddRange(electronicsTips.Where(c => c.Category == TipCategory.Cellphone));
-            tips.AddRange(electronicsTips.Where(c => c.Category == TipCategory.Electricity));
+            if(waterEmissions.Count > 0)
+                tips.AddRange(waterTips.Take(numberOfItemsToSelect));
+
+            if (foodTips.Count > 0)
+                tips.AddRange(foodTips.Take(numberOfItemsToSelect));
+
+            if (electronicsTips.Count > 0)
+                tips.AddRange(electronicsTips.Where(c => c.Category == TipCategory.Cellphone));
+
+            if (electronicsTips.Count > 0)
+                tips.AddRange(electronicsTips.Where(c => c.Category == TipCategory.Electricity));
 
             return Ok(tips.OrderBy(x => random.Next()).ToList());
         }

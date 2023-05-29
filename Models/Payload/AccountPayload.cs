@@ -16,7 +16,6 @@ namespace MeuRastroCarbonoAPI.Models.Payload
         [StringLength(10)]
         public string Password { get; set; }
 
-        [Required]
-        public DateTime Birthdate { get; set; }
+        public DateTime? Birthdate { get; set; }
     }
 }

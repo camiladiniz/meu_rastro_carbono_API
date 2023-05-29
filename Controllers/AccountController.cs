@@ -56,6 +56,11 @@ namespace MeuRastroCarbonoAPI.Controllers
         [Route("register")]
         public async Task<ActionResult<AccountPayload>> Register(AccountPayload payload)
         {
+            var userExists = await _context.Users.Where(u => u.Email == payload.Email).FirstOrDefaultAsync();
+
+            if (userExists != null)
+                return BadRequest();
+
             var userEntity = new UserEntity()
             {
                 Name = payload.Name,

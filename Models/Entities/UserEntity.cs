@@ -17,7 +17,6 @@ namespace MeuRastroCarbonoAPI.Models.Entities
         [Required]
         public string? Password { get; set; }
 
-        [Required]
         public DateTime? Birthdate { get; set; }
 
         public DateTime RegisterDate { get; set; } = DateTime.Now;
