@@ -2,6 +2,7 @@ using MeuRastroCarbonoAPI.Infra;
 using MeuRastroCarbonoAPI.Models.Entities;
 using MeuRastroCarbonoAPI.Models.Payload;
 using MeuRastroCarbonoAPI.Models.Response;
+using MeuRastroCarbonoAPI.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -34,16 +35,27 @@ namespace MeuRastroCarbonoAPI.Controllers
 
             var userEntity = await _context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
 
-            if(userEntity is null || userEntity.Password != user.Password)
+            if (userEntity is null)
             {
                 return Unauthorized();
             }
 
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var validPassword = PasswordHelper.VerifyPassword(user.Password, userEntity.Password, userEntity.Salt);
+
+            if (!validPassword)
+            {
+                return Unauthorized();
+            }
+
+            var jwtSecret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var jwtIssuer = _configuration["JWT:ValidIssuer"];
+            var jwtAudience = _configuration["JWT:ValidAudience"];
+
+            var secretKey = jwtSecret;
             var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var tokeOptions = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
+                issuer: jwtIssuer,
+                audience: jwtAudience,
                 claims: new List<Claim>(),
                 expires: DateTime.Now.AddMinutes(6),
                 signingCredentials: signinCredentials
@@ -61,11 +73,14 @@ namespace MeuRastroCarbonoAPI.Controllers
             if (userExists != null)
                 return BadRequest();
 
+            var hash = PasswordHelper.HashPasword(payload.Password, out var salt);
+
             var userEntity = new UserEntity()
             {
                 Name = payload.Name,
                 Email = payload.Email,
-                Password = payload.Password,
+                Password = hash,
+                Salt = salt,
                 Birthdate = payload.Birthdate,
                 Evolution = new EvolutionEntity()
                 {
