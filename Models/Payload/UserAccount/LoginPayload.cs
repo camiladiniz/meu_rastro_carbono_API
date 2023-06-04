@@ -1,4 +1,4 @@
-﻿namespace MeuRastroCarbonoAPI.Models.Payload
+﻿namespace MeuRastroCarbonoAPI.Models.Payload.UserAccount
 {
     public class LoginPayload
     {

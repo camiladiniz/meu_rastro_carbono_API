@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MeuRastroCarbonoAPI.Models.Payload
+namespace MeuRastroCarbonoAPI.Models.Payload.UserAccount
 {
-    public class AccountPayload
+    public class AccountEditPayload
     {
         [Required]
         [StringLength(30)]
@@ -11,11 +11,5 @@ namespace MeuRastroCarbonoAPI.Models.Payload
         [Required]
         [StringLength(50)]
         public string Email { get; set; }
-
-        [Required]
-        [StringLength(10)]
-        public string Password { get; set; }
-
-        public DateTime? Birthdate { get; set; }
     }
 }

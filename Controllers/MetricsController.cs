@@ -3,18 +3,17 @@ using MeuRastroCarbonoAPI.Infra;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using MeuRastroCarbonoAPI.Models.Payload.Surveys;
 using MeuRastroCarbonoAPI.Models.Response;
 using MeuRastroCarbonoAPI.Models.Payload.Metrics;
 using MeuRastroCarbonoAPI.Models.Enums;
 using MeuRastroCarbonoAPI.Models.Payload.Tips;
 using MeuRastroCarbonoAPI.Constants;
 using static MeuRastroCarbonoAPI.Models.Payload.Tips.TipsModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MeuRastroCarbonoAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]"), Authorize]
     [ApiController]
     public class MetricsController : ControllerBase
     {
@@ -25,9 +24,12 @@ namespace MeuRastroCarbonoAPI.Controllers
             _context = context;
         }
 
-        [HttpPost("user/{userId}")] // TODO: Authorize
-        public async Task<IActionResult> GetMetrics(Guid userId)
+        [HttpPost("user")]
+        public async Task<IActionResult> GetMetrics()
         {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
             var payload = new MetricsPayload()
             {
                 FinalDate = DateTime.UtcNow,
@@ -82,9 +84,12 @@ namespace MeuRastroCarbonoAPI.Controllers
             return Ok(metrics);
         }
 
-        [HttpPost("tips/{userId}")] // TODO: Authorize
-        public async Task<IActionResult> GetTips(Guid userId)
+        [HttpPost("tips"), Authorize]
+        public async Task<IActionResult> GetTips()
         {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
             var waterTips = TipsDataset.waterTips;
             var foodTips = TipsDataset.foodTips;
             var electronicsTips = TipsDataset.electronicsTips;

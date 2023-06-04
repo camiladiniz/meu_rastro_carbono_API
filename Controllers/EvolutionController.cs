@@ -1,14 +1,11 @@
 ﻿using MeuRastroCarbonoAPI.Infra;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace MeuRastroCarbonoAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]"), Authorize]
     [ApiController]
     public class EvolutionController : ControllerBase
     {
@@ -21,9 +18,12 @@ namespace MeuRastroCarbonoAPI.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet("{userId}")] // TODO: Authorize
-        public async Task<IActionResult> EvolutionPerUser(Guid userId)
+        [HttpGet]
+        public async Task<IActionResult> EvolutionPerUser()
         {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
             var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user is null)

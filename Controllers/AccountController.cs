@@ -1,8 +1,9 @@
 using MeuRastroCarbonoAPI.Infra;
 using MeuRastroCarbonoAPI.Models.Entities;
-using MeuRastroCarbonoAPI.Models.Payload;
+using MeuRastroCarbonoAPI.Models.Payload.UserAccount;
 using MeuRastroCarbonoAPI.Models.Response;
 using MeuRastroCarbonoAPI.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +19,7 @@ namespace MeuRastroCarbonoAPI.Controllers
     {
         private readonly DbContextClass _context;
         private readonly IConfiguration _configuration;
+        //private readonly IEmailSender _sender;
 
         public AccountController(DbContextClass context, IConfiguration configuration)
         {
@@ -47,20 +49,11 @@ namespace MeuRastroCarbonoAPI.Controllers
                 return Unauthorized();
             }
 
-            var jwtSecret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+            var jwtSecret = _configuration["JWT:Secret"];
             var jwtIssuer = _configuration["JWT:ValidIssuer"];
             var jwtAudience = _configuration["JWT:ValidAudience"];
-
-            var secretKey = jwtSecret;
-            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var tokeOptions = new JwtSecurityToken(
-                issuer: jwtIssuer,
-                audience: jwtAudience,
-                claims: new List<Claim>(),
-                expires: DateTime.Now.AddMinutes(6),
-                signingCredentials: signinCredentials
-            );
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+            var tokenString = AuthenticationHelper.GetTokenString(jwtSecret, jwtIssuer, jwtAudience, userEntity.Id.ToString());
+            
             return Ok(new LoginResponse { Token = tokenString, Name = userEntity.Name, UserId = userEntity.Id });
         }
 
@@ -90,104 +83,104 @@ namespace MeuRastroCarbonoAPI.Controllers
             };
 
             _context.Users.Add(userEntity);
-
-
             await _context.SaveChangesAsync();
             userEntity = await _context.Users.Where(u => u.Email == payload.Email).FirstOrDefaultAsync();
 
-            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
-            var tokeOptions = new JwtSecurityToken(
-                issuer: _configuration["JWT:ValidIssuer"],
-                audience: _configuration["JWT:ValidAudience"],
-                claims: new List<Claim>(),
-                expires: DateTime.Now.AddMinutes(6),
-                signingCredentials: signinCredentials
-            );
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+            var jwtSecret = _configuration["JWT:Secret"];
+            var jwtIssuer = _configuration["JWT:ValidIssuer"];
+            var jwtAudience = _configuration["JWT:ValidAudience"];
+            var tokenString = AuthenticationHelper.GetTokenString(jwtSecret, jwtIssuer, jwtAudience, userEntity.Id.ToString());
 
             return Ok(new LoginResponse { Token = tokenString, Name = userEntity.Name, UserId = userEntity.Id });
         }
 
-        //[HttpGet]
-        //[Route("ProductsList")]
-        //public async Task<ActionResult<IEnumerable<Product>>> Get()
-        //{
-        //    var productCache = new List<Product>();
-        //    productCache = _cacheService.GetData<List<Product>>("Product");
-        //    if (productCache == null)
-        //    {
-        //        var product = await _context.Products.ToListAsync();
-        //        if (product.Count > 0)
-        //        {
-        //            productCache = product;
-        //            var expirationTime = DateTimeOffset.Now.AddMinutes(3.0);
-        //            _cacheService.SetData("Product", productCache, expirationTime);
-        //        }
-        //    }
-        //    return productCache;
-        //}
+        [HttpPut]
+        [Route("profile"), Authorize]
+        public async Task<ActionResult> UpdateProfile(AccountEditPayload payload)
+        {
+            // Recuperar o ID do usuário do token JWT
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
 
-        //[HttpGet]
-        //[Route("ProductDetail")]
-        //public async Task<ActionResult<Product>> Get(int id)
-        //{
-        //    var productCache = new Product();
-        //    var productCacheList = new List<Product>();
-        //    productCacheList = _cacheService.GetData<List<Product>>("Product");
-        //    productCache = productCacheList.Find(x => x.ProductId == id);
-        //    if (productCache == null)
-        //    {
-        //        productCache = await _context.Products.FindAsync(id);
-        //    }
-        //    return productCache;
-        //}
+            var userEntity = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
-        //[HttpPost]
-        //[Route("CreateProduct")]
-        //public async Task<ActionResult<Product>> POST(Product product)
-        //{
-        //    _context.Products.Add(product);
-        //    await _context.SaveChangesAsync();
-        //    _cacheService.RemoveData("Product");
-        //    return CreatedAtAction(nameof(Get), new { id = product.ProductId }, product);
-        //}
+            if (userEntity is null)
+            {
+                return BadRequest();
+            }
 
-        //[HttpPost]
-        //[Route("DeleteProduct")]
-        //public async Task<ActionResult<IEnumerable<Product>>> Delete(int id)
-        //{
-        //    var product = await _context.Products.FindAsync(id);
-        //    if (product == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    _context.Products.Remove(product);
-        //    _cacheService.RemoveData("Product");
-        //    await _context.SaveChangesAsync();
-        //    return await _context.Products.ToListAsync();
-        //}
+            userEntity.Name = payload.Name;
+            userEntity.Email = payload.Email;
 
-        //[HttpPost]
-        //[Route("UpdateProduct")]
-        //public async Task<ActionResult<IEnumerable<Product>>> Update(int id, Product product)
-        //{
-        //    if (id != product.ProductId)
-        //    {
-        //        return BadRequest();
-        //    }
-        //    var productData = await _context.Products.FindAsync(id);
-        //    if (productData == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    productData.ProductCost = product.ProductCost;
-        //    productData.ProductDescription = product.ProductDescription;
-        //    productData.ProductName = product.ProductName;
-        //    productData.ProductStock = product.ProductStock;
-        //    _cacheService.RemoveData("Product");
-        //    await _context.SaveChangesAsync();
-        //    return await _context.Products.ToListAsync();
-        //}
+            _context.Users.Update(userEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("forgot-password")]
+        public async Task<ActionResult> SendCodeToEmail(AccountEditPayload payload)
+        {
+            var userEntity = await _context.Users.Where(u => u.Email == payload.Email).FirstOrDefaultAsync();
+
+            if (userEntity is null)
+            {
+                return BadRequest();
+            }
+
+            // generate code
+            var code = PasswordHelper.GenerateRandomCode(5);
+
+            // send random code to user's email
+
+
+            // store code
+
+
+
+
+            if (userEntity is null)
+            {
+                return BadRequest();
+            }
+
+            userEntity.Name = payload.Name;
+            userEntity.Email = payload.Email;
+
+            _context.Users.Update(userEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPut]
+        [Route("update-password"), Authorize]
+        public async Task<ActionResult> SendCodeToEmail(AccountEditPayload payload)
+        {
+            // validate received code
+
+            // update password
+
+            // disable code
+
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
+            var userEntity = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
+
+            if (userEntity is null)
+            {
+                return BadRequest();
+            }
+
+            userEntity.Name = payload.Name;
+            userEntity.Email = payload.Email;
+
+            _context.Users.Update(userEntity);
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }

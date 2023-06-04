@@ -6,13 +6,13 @@ using MeuRastroCarbonoAPI.Models.Enums;
 using MeuRastroCarbonoAPI.Models.Payload;
 using MeuRastroCarbonoAPI.Models.Payload.Surveys;
 using MeuRastroCarbonoAPI.Models.Response;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MeuRastroCarbonoAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]"), Authorize]
     [ApiController]
     public class SurveyController : ControllerBase
     {
@@ -27,22 +27,28 @@ namespace MeuRastroCarbonoAPI.Controllers
             _evolutionRepository = evolutionRepository;
         }
 
-        [HttpPost("answered")] // TODO: Authorize
+        [HttpPost("answered")]
         public async Task<IActionResult> GetAnsweredSurveys([FromBody] SurveyAnsweredPayload payload)
         {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
             var surveysResponse = new SurveysPerDateResponse();
 
-            surveysResponse.FoodSurvey = await _context.FoodSurveyAnswers.Where(s => s.UserId == payload.UserId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
-            surveysResponse.LocomotionSurvey = await _context.LocomotionSurveyAnswers.Where(s => s.UserId == payload.UserId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
-            surveysResponse.WaterSurvey = await _context.WaterSurveyAnswers.Where(s => s.UserId == payload.UserId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
-            surveysResponse.ElectronicSurvey = await _context.ElectronicSurveyAnswers.Where(s => s.UserId == payload.UserId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
+            surveysResponse.FoodSurvey = await _context.FoodSurveyAnswers.Where(s => s.UserId == userId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
+            surveysResponse.LocomotionSurvey = await _context.LocomotionSurveyAnswers.Where(s => s.UserId == userId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
+            surveysResponse.WaterSurvey = await _context.WaterSurveyAnswers.Where(s => s.UserId == userId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
+            surveysResponse.ElectronicSurvey = await _context.ElectronicSurveyAnswers.Where(s => s.UserId == userId && s.ConsumptionDate.Date == payload.Date.Date).AnyAsync();
             return Ok(surveysResponse);
         }
 
-        [HttpPost("water")] // TODO: Authorize
+        [HttpPost("water")]
         public async Task<IActionResult> WaterSurveyAnswer([FromBody] WaterSurveyAnswerPayload payload)
         {
-            var user = await _context.Users.Where(u => u.Id == payload.UserId).FirstOrDefaultAsync();
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
+            var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user is null)
             {
@@ -51,7 +57,7 @@ namespace MeuRastroCarbonoAPI.Controllers
 
             var answer = new WaterSurveyAnswerEntity() {
                 Id = Guid.NewGuid(),
-                UserId = payload.UserId,
+                UserId = userId,
                 ConsumptionDate = payload.ConsumptionDate,
                 SurveyType = SurveyType.Water,
                 CarbonEmissionInKgCO2e = payload.CarbonEmissionInKgCO2e,
@@ -65,10 +71,13 @@ namespace MeuRastroCarbonoAPI.Controllers
             return Ok();
         }
 
-        [HttpPost("food")] // TODO: Authorize
+        [HttpPost("food")]
         public async Task<IActionResult> FoodSurveyAnswer([FromBody] FoodSurveyAnswerPayload payload)
         {
-            var user = await _context.Users.Where(u => u.Id == payload.UserId).FirstOrDefaultAsync();
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
+            var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user is null)
             {
@@ -78,7 +87,7 @@ namespace MeuRastroCarbonoAPI.Controllers
             var answer = new FoodSurveyAnswerEntity()
             {
                 Id = Guid.NewGuid(),
-                UserId = payload.UserId,
+                UserId = userId,
                 ConsumptionDate = payload.ConsumptionDate,
                 SurveyType = SurveyType.Food,
                 CarbonEmissionInKgCO2e = payload.CarbonEmissionInKgCO2e,
@@ -95,7 +104,10 @@ namespace MeuRastroCarbonoAPI.Controllers
         [HttpPost("electronics")] // TODO: Authorize
         public async Task<IActionResult> ElectronicsSurveyAnswer([FromBody] ElectronicSurveyAnswerPayload payload)
         {
-            var user = await _context.Users.Where(u => u.Id == payload.UserId).FirstOrDefaultAsync();
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
+            var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user is null)
             {
@@ -105,7 +117,7 @@ namespace MeuRastroCarbonoAPI.Controllers
             var answer = new ElectronicSurveyAnswerEntity()
             {
                 Id = Guid.NewGuid(),
-                UserId = payload.UserId,
+                UserId = userId,
                 ConsumptionDate = payload.ConsumptionDate,
                 SurveyType = SurveyType.Electronics,
                 CarbonEmissionInKgCO2e = payload.CarbonEmissionInKgCO2e,
@@ -131,10 +143,13 @@ namespace MeuRastroCarbonoAPI.Controllers
             return Ok();
         }
 
-        [HttpPost("locomotion")] // TODO: Authorize
+        [HttpPost("locomotion")]
         public async Task<IActionResult> LocomotionSurveyAnswer([FromBody] LocomotionSurveyAnswerPayload payload)
         {
-            var user = await _context.Users.Where(u => u.Id == payload.UserId).FirstOrDefaultAsync();
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
+            var user = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
 
             if (user is null)
             {
@@ -144,7 +159,7 @@ namespace MeuRastroCarbonoAPI.Controllers
             var answer = new LocomotionSurveyAnswerEntity()
             {
                 Id = Guid.NewGuid(),
-                UserId = payload.UserId,
+                UserId = userId,
                 ConsumptionDate = payload.ConsumptionDate,
                 DistanceInKm = payload.DistanceInKm,
                 SurveyType = SurveyType.Locomotion,

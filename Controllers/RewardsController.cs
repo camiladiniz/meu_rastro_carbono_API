@@ -1,14 +1,14 @@
 ﻿using MeuRastroCarbonoAPI.Infra;
 using MeuRastroCarbonoAPI.Models.Enums;
 using MeuRastroCarbonoAPI.Models.Payload.Rewards;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace MeuRastroCarbonoAPI.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]"), Authorize]
     [ApiController]
     public class RewardsController : ControllerBase
     {
@@ -18,9 +18,12 @@ namespace MeuRastroCarbonoAPI.Controllers
             _context = context;
         }
 
-        [HttpPost("user/{userId}")] // TODO: Authorize
-        public async Task<IActionResult> GetUserRewards(Guid userId)
+        [HttpPost("user")]
+        public async Task<IActionResult> GetUserRewards()
         {
+            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
+            var userId = Guid.Parse(userIdClaim);
+
             var rewards = new List<RewardsModel>();
 
             var waterEmissions = await _context.WaterSurveyAnswers.Where(w => w.UserId == userId).ToListAsync();
