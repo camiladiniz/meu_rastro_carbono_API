@@ -1,7 +1,9 @@
 using MeuRastroCarbonoAPI.Infra;
 using MeuRastroCarbonoAPI.Models.Entities;
+using MeuRastroCarbonoAPI.Models.Entities.Account;
 using MeuRastroCarbonoAPI.Models.Payload.UserAccount;
 using MeuRastroCarbonoAPI.Models.Response;
+using MeuRastroCarbonoAPI.Services.Interfaces;
 using MeuRastroCarbonoAPI.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,12 +21,13 @@ namespace MeuRastroCarbonoAPI.Controllers
     {
         private readonly DbContextClass _context;
         private readonly IConfiguration _configuration;
-        //private readonly IEmailSender _sender;
+        private readonly IEmailSender _emailSender;
 
-        public AccountController(DbContextClass context, IConfiguration configuration)
+        public AccountController(DbContextClass context, IConfiguration configuration, IEmailSender sender)
         {
             _context = context;
             _configuration = configuration;
+            _emailSender = sender;
         }
 
         [HttpPost("login")]
@@ -133,53 +136,56 @@ namespace MeuRastroCarbonoAPI.Controllers
             var code = PasswordHelper.GenerateRandomCode(5);
 
             // send random code to user's email
+            var fromEmail = _configuration["emailServer:fromEmail"];
+            var smtpDomain = _configuration["emailServer:smtpDomain"];
+            var smtpPort = _configuration["emailServer:smtpPort"];
+            var fromEmailPassword = _configuration["emailServer:fromEmailPassword"];
 
+            await _emailSender.SendRenewPasswordEmailAsync(fromEmail, userEntity.Email, smtpDomain, int.Parse(smtpPort), userEntity.Name, code, fromEmailPassword);
 
             // store code
-
-
-
-
-            if (userEntity is null)
+            var codeEntity = new PasswordRenewCodeEntity()
             {
-                return BadRequest();
-            }
+                Id = Guid.NewGuid(),
+                UserId = userEntity.Id,
+                Code = code,
+                Used = false
+            };
 
-            userEntity.Name = payload.Name;
-            userEntity.Email = payload.Email;
-
-            _context.Users.Update(userEntity);
+            _context.PasswordRenewCodes.Add(codeEntity);
             await _context.SaveChangesAsync();
 
             return Ok();
         }
 
         [HttpPut]
-        [Route("update-password"), Authorize]
-        public async Task<ActionResult> SendCodeToEmail(AccountEditPayload payload)
+        [Route("update-password/code/{code}")]
+        public async Task<ActionResult> SendCodeToEmail(ForgotPasswordPayload payload, string code)
         {
             // validate received code
+            var codeEntity = await _context.PasswordRenewCodes.Where(u => u.Code == code).FirstOrDefaultAsync();
+            if (codeEntity is null || codeEntity.Used == true)
+            {
+                return NotFound();
+            }
 
-            // update password
-
-            // disable code
-
-            var userIdClaim = User.FindFirst("userId")?.Value ?? "";
-            var userId = Guid.Parse(userIdClaim);
-
-            var userEntity = await _context.Users.Where(u => u.Id == userId).FirstOrDefaultAsync();
-
-            if (userEntity is null)
+            var userEntity = await _context.Users.Where(u => u.Email == payload.Email).FirstOrDefaultAsync();
+            if (userEntity is null || userEntity.Email != payload.Email)
             {
                 return BadRequest();
             }
 
-            userEntity.Name = payload.Name;
-            userEntity.Email = payload.Email;
-
+            // updating password
+            var hash = PasswordHelper.HashPasword(payload.Password, out var salt);
+            userEntity.Password = hash;
+            userEntity.Salt = salt;
             _context.Users.Update(userEntity);
-            await _context.SaveChangesAsync();
+            
+            // disabling code
+            codeEntity.Used = true;
+            _context.PasswordRenewCodes.Update(codeEntity);
 
+            await _context.SaveChangesAsync();
             return Ok();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using MeuRastroCarbonoAPI.Models.Entities;
+using MeuRastroCarbonoAPI.Models.Entities.Account;
 using MeuRastroCarbonoAPI.Models.Entities.Surveys;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,7 @@ namespace MeuRastroCarbonoAPI.Infra
             options.UseSqlServer(Configuration["DefaultConnection"]);
         }
         public DbSet<UserEntity> Users { get; set; }
+        public DbSet<PasswordRenewCodeEntity> PasswordRenewCodes { get; set; }
         public DbSet<WaterSurveyAnswerEntity> WaterSurveyAnswers { get; set; }
         public DbSet<FoodSurveyAnswerEntity> FoodSurveyAnswers { get; set; }
         public DbSet<ElectronicSurveyAnswerEntity> ElectronicSurveyAnswers { get; set; }

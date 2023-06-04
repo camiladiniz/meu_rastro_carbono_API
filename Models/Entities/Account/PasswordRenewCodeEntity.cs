@@ -2,7 +2,7 @@
 
 namespace MeuRastroCarbonoAPI.Models.Entities.Account
 {
-    public class PasswordRenewCode
+    public class PasswordRenewCodeEntity
     {
         [Key]
         public Guid Id { get; set; }
@@ -10,9 +10,11 @@ namespace MeuRastroCarbonoAPI.Models.Entities.Account
         public DateTime CreationDate { get; set; } = DateTime.Now;
 
         [Required]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [Required]
         public string Code { get; set; }
+
+        public bool Used { get; set; }
     }
 }

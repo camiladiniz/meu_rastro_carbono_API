@@ -1,5 +1,7 @@
 using MeuRastroCarbonoAPI.Infra;
 using MeuRastroCarbonoAPI.Infra.Repositories;
+using MeuRastroCarbonoAPI.Services;
+using MeuRastroCarbonoAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -49,6 +51,8 @@ IConfiguration configuration = new ConfigurationBuilder()
 
 builder.Services.AddDbContext<DbContextClass>();
 builder.Services.AddScoped<EvolutionRepository>();
+builder.Services.AddSingleton<IEmailSender, EmailSender>();
+
 builder.Services.AddAuthentication(opt => {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
