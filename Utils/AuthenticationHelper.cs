@@ -18,10 +18,23 @@ namespace MeuRastroCarbonoAPI.Utils
                 {
                     new Claim("userId", userId)
                 },
-            expires: DateTime.Now.AddMinutes(2),
+            expires: DateTime.Now.AddMinutes(120),
                 signingCredentials: signinCredentials
             );
             return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+        }
+
+        public static bool IsEmail(string strEmail)
+        {
+            string strModelo = "^([0-9a-zA-Z]([-.\\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\\w]*[0-9a-zA-Z]\\.)+[a-zA-Z]{2,9})$";
+            if (System.Text.RegularExpressions.Regex.IsMatch(strEmail, strModelo))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

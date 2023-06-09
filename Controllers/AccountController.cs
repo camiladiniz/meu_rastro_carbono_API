@@ -8,10 +8,6 @@ using MeuRastroCarbonoAPI.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace MeuRastroCarbonoAPI.Controllers
 {
@@ -33,23 +29,23 @@ namespace MeuRastroCarbonoAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginPayload user)
         {
-            if (user is null)
+            if (user is null || user.Password.Length < 2 || user.Email.Length < 2)
             {
-                return BadRequest("Invalid user request!!!");
+                return BadRequest("Dados inválidos");
             }
 
             var userEntity = await _context.Users.Where(u => u.Email == user.Email).FirstOrDefaultAsync();
 
             if (userEntity is null)
             {
-                return Unauthorized();
+                return BadRequest("Dados inválidos");
             }
 
             var validPassword = PasswordHelper.VerifyPassword(user.Password, userEntity.Password, userEntity.Salt);
 
             if (!validPassword)
             {
-                return Unauthorized();
+                return BadRequest("Dados inválidos");
             }
 
             var jwtSecret = _configuration["JWT:Secret"];
@@ -64,10 +60,30 @@ namespace MeuRastroCarbonoAPI.Controllers
         [Route("register")]
         public async Task<ActionResult<AccountPayload>> Register(AccountPayload payload)
         {
+            if(payload.Name.Length < 3 || payload.Name.Length > 30)
+            {
+                return BadRequest("Nome deve conter de 3 a 30 caracteres");
+            }
+
+            if (payload.Email.Length < 10 || payload.Email.Length > 50)
+            {
+                return BadRequest("Email deve conter de 10 a 50 caracteres");
+            }
+
+            if(!AuthenticationHelper.IsEmail(payload.Email))
+            {
+                return BadRequest("Informe um e-mail válido");
+            }
+
+            if (payload.Password.Length < 5 || payload.Password.Length > 15)
+            {
+                return BadRequest("Senha deve conter de 5 a 15 caracteres");
+            }
+
             var userExists = await _context.Users.Where(u => u.Email == payload.Email).FirstOrDefaultAsync();
 
             if (userExists != null)
-                return BadRequest();
+                return BadRequest("");
 
             var hash = PasswordHelper.HashPasword(payload.Password, out var salt);
 

@@ -24,7 +24,7 @@ namespace MeuRastroCarbonoAPI.Controllers
             _context = context;
         }
 
-        [HttpPost("user")]
+        [HttpPost]
         public async Task<IActionResult> GetMetrics()
         {
             var userIdClaim = User.FindFirst("userId")?.Value ?? "";
