@@ -18,7 +18,7 @@ namespace MeuRastroCarbonoAPI.Utils
                 {
                     new Claim("userId", userId)
                 },
-            expires: DateTime.Now.AddMinutes(120),
+            expires: DateTime.Now.AddMinutes(4320),
                 signingCredentials: signinCredentials
             );
             return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
